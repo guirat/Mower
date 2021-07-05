@@ -15,7 +15,8 @@ class Mower:
     def do_action(self):
         coord = 0 if self.direction[0] else 1
         step = self.direction[0] if self.direction[0] else self.direction[1]
-        self.position[coord] += step
+        if self.position[coord] + step <= self.lawn_size[coord]:
+            self.position[coord] += step
 
     def turn_left(self):
         direction_index = DIRECTIONS_LIST.index(self.direction)
@@ -37,9 +38,10 @@ class Mower:
         direction = [k for k, v in DIRECTIONS.items() if v == direction][0]
         return f"===> {position} {direction}"
 
-    def __init__(self, positon_message):
+    def __init__(self, positon_message, lawn_size):
         self.position = self.decrypt_position(positon_message)[0]
         self.direction = self.decrypt_position(positon_message)[1]
+        self.lawn_size = (int(lawn_size[:len(lawn_size)//2]), int(lawn_size[len(lawn_size)//2:]))
         self.actions = {
             "A": self.do_action,
             "G": self.turn_left,
@@ -57,6 +59,7 @@ def parse_and_launch_file():
         with open("mower_steps.txt", "r") as mower_file:
             message = ""
             seq_mowing = ""
+            up_right_coord = ""
             steps = mower_file.readlines()
             for line in steps:
                 line = line.strip()
@@ -67,10 +70,10 @@ def parse_and_launch_file():
                 elif line.isdigit():
                     up_right_coord = line
 
-                if message and seq_mowing:
+                if message and seq_mowing and up_right_coord:
                     print(message)
                     print(seq_mowing)
-                    mower = Mower(message)
+                    mower = Mower(message, up_right_coord)
                     final_position = mower.mow(seq_mowing)
                     print(final_position)
                     message = ""
